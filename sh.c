@@ -61,43 +61,26 @@ runcmd(struct cmd *cmd)
     if(ecmd->argv[0] == 0)
       exit(0);
 
-    //char *myargs[] = {"scribe_notes"};
-    //int argsize = sizeof(ecmd->argv)/sizeof(ecmd->argv[0]);
-    //printf("%i\n",argsize);
-    //for(int the_count = 1; the_count < 10; the_count++){
-    //  printf("%s\n",ecmd->argv[the_count]);
-      //myargs[the_count-1] = ecmd->argv[the_count];
-      ///printf("%s\n",myargs[the_count-1] );  
-    //}
-    //printf("%s\n",*myargs);
-    //execl("/bin/ls", "ls", *myargs,(char *)NULL);
-    execl("/bin/ls", "ls",  ecmd->argv[1],(char *)NULL);
-    //execl("/bin/ls", ecmd->argv[1], NULL);
-    perror("execl() failure!\n\n");
+    execvp(ecmd->argv[0], ecmd->argv);
+    perror("execvp() failure!\n\n");
 
-    printf("This print is after execl() and should not have been executed if execl were successful! \n\n");// Your code here ...
     break;
 
   case '>':
-    ecmd = (struct execcmd*)cmd;
-    printf("%d\n",rcmd->fd);
-    printf("%s\n",rcmd->file);
-    printf("%d\n",rcmd->mode);
-    printf("%s\n",ecmd->argv[1] );
-    //printf("%d\n",rcmd->);
-    close(rcmd->fd); //Release fd no - 1
-    open(rcmd->file, rcmd->fd); //Open a file with fd no = 1
-    if (fork() == 0) {//Child process
-      //execcmd(cmd); //By default, the program writes to stdout (fd no - 1). ie, in this case, the file
-    }
-    printf("%s\n", "successful");
-    
+    rcmd = (struct redircmd*)cmd;
+    int fout = open(rcmd->file,rcmd->mode,0666); 
+    dup2 (fout, rcmd->fd);
+    runcmd(rcmd->cmd);
+    close(fout);   
+
     break;
+
   case '<':
     rcmd = (struct redircmd*)cmd;
-    fprintf(stderr, "redir not implemented\n");
-    // Your code here ...
+    int fin = open(rcmd->file,rcmd->mode);
+    dup2(fin,rcmd->fd);
     runcmd(rcmd->cmd);
+    close(fin);
     break;
 
   case '|':
