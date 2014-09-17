@@ -86,20 +86,19 @@ runcmd(struct cmd *cmd)
   case '|':
     pcmd = (struct pipecmd*)cmd;
     
-    int pd[2];
-    pipe(pd);
+    pipe(p);
 
     if (!fork()) {
         close(1);       
-        dup(pd[1]);  
-        close(pd[0]); 
+        dup(p[1]);  
+        close(p[0]); 
         runcmd(pcmd->left);
 
     } else {
 
         close(0);       
-        dup(pd[0]); 
-        close(pd[1]);
+        dup(p[0]); 
+        close(p[1]);
         runcmd(pcmd->right);
     }
 
