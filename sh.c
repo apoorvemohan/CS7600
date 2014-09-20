@@ -61,8 +61,10 @@ runcmd(struct cmd *cmd)
     if(ecmd->argv[0] == 0)
       exit(0);
 
-    execvp(ecmd->argv[0], ecmd->argv);
-    perror("execvp() failure!\n\n");
+    if(!strcmp(ecmd->argv[0], "exit"))
+	kill(getppid(), 9);
+    else
+        execvp(ecmd->argv[0], ecmd->argv);
 
     break;
 
@@ -89,14 +91,14 @@ runcmd(struct cmd *cmd)
     pipe(p);
 
     if (!fork()) {
-        close(1);       
+        close(STDOUT_FILENO);       
         dup(p[1]);  
         close(p[0]); 
         runcmd(pcmd->left);
 
     } else {
 
-        close(0);       
+        close(STDIN_FILENO);       
         dup(p[0]); 
         close(p[1]);
         runcmd(pcmd->right);
